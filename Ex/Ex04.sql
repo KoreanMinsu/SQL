@@ -97,3 +97,4 @@ where em.manager_id = ma.employee_id;
 select *
 from employees em , locations lo
 where em.salary = lo.location_id;
+

@@ -19,7 +19,7 @@ SELECT
     first_name     "이름",
     salary         "급여",
     to_char(hire_date, 'yyyy-mm-dd day','nls_date_language=korean')   "입사일",
-    phone_number   "전화번호", --debug
+    replace(phone_number, '.','-')   "전화번호",
     department_id  "부서번호"
 FROM
     employees
@@ -34,17 +34,45 @@ WHERE
     )
 ORDER BY
     salary DESC;
---쿼리 디버깅(전화번호형식)
+-- Query debug finished(phone_number using replace instead of to_char)
 
 --문제3:매니저별 담당직원 평균급여, 최소급여, 최대급여확인 
 --2005년 이후 입사자/평균급여 5000이상/평균급여 내림차순/소수점 첫째반올림/
 --매니저 아이디/매니저이름/매니저별 평균급여//최소급여/최대급여
-select em.manager_id "매니저아이디", ma.first_name "매니저이름", round(avg(ma.salary),0) "매니저별평균급여", min(ma.salary) "매니저별최소급여", max(ma.salary) "매니저별최대급여"
-from employees em, employees ma
-group by 
-where em.manager_id = ma.manager_id and hire_date > '05/01/01' and avg(ma.salary) >= 5000
-order by avg(ma.salary) desc;
---쿼리 디버깅, 완성필
+SELECT
+    ma.manager_id      "매니저아이디",
+    em.first_name           "매니저이름",
+    avgSal           "매니저별평균급여",
+    minSal            "매니저별최소급여",
+    maxSal            "매니저별최대급여"
+FROM
+    employees  em,
+        (select manager_id, round(avg(salary),0) avgSal, max(salary) maxSal, min(salary) minSal
+        from employees
+        group by manager_id) ma
+
+WHERE
+       ma.manager_id = em.manager_id
+    AND to_char(hire_date,'yy/mm/dd') > '05/01/01'
+        AND avgSal >= 5000
+order by avgSal desc;
+--Query debugging finished - 
+select  ma.manager_id 매니저아이디,
+        em.first_name 매니저이름,
+        avgsal 매니저별편균급여,
+        minsal 매니저별최소급여,
+        maxsal 매니저별최대급여
+from (select  manager_id, 
+        round(avg(salary), 1) avgsal, 
+        min(salary) minsal, 
+        max(salary) maxsal
+      from employees
+      where to_char(hire_date,'yy/mm/dd') > '05/01/01'
+      group by manager_id
+      having round(avg(salary)) > 5000) ma, employees em
+where ma.manager_id = em.employee_id;
+
+
 
 --문제4: 각사원 사번/이름,부서명, 매니저 이름 조회
 SELECT
@@ -98,10 +126,25 @@ WHERE
     rn >= 11;
     
 --문제 6: 가장 늦게 입사한 직원의 이름(first+last)와 연봉, 근무 부서명 출력    
-select first_name||' '||last_name "이름", salary "연봉", department_name "부서이름", hire_date "입사일"
-from employees e, departments d
-where e.department_id = d.department_id and ;
---쿼리 완성필
+SELECT
+    first_name
+    || ' '
+    || last_name     "이름",
+    salary           "연봉",
+    department_name  "부서이름",
+    to_char(hire_date, 'yy/mm/dd')        "입사일"
+FROM
+    employees    e,
+    departments  d
+WHERE
+        e.department_id = d.department_id
+    AND hire_date IN (
+        SELECT
+            MAX(hire_date)
+        FROM
+            employees
+         );
+--Query debugging finished - used where twice izzit.
 
 --문제7: 평균연봉 가장 높은 부서직원의 직원번호, 이름, 성, 업무명, 연봉, 조회
 select employee_id "사번", first_name "이름", last_name "성", salary "급여", avg(salary) "평균연봉", job_title "업무명" 

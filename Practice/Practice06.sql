@@ -1,3 +1,9 @@
+--삭제
+DROP SEQUENCE seq_book_id;
+DROP SEQUENCE seq_author_id;
+DROP TABLE books;
+DROP TABLE authors; 
+
 --테이블 author  생성
 CREATE TABLE authors (
     author_id    NUMBER(10),
@@ -141,7 +147,7 @@ SELECT
     b.book_id,
     b.title,
     b.pubs,
-    to_char(b.pub_date,'yyyy-mm-dd') "pub_date",
+    b.pub_date,
     b.author_id,
     au.author_name,
     au.author_desc
@@ -160,8 +166,3 @@ delete from authors
 where author_id = 4;
 
 
---삭제
-DROP SEQUENCE seq_book_id;
-DROP SEQUENCE seq_author_id;
-DROP TABLE books;
-DROP TABLE authors; 
